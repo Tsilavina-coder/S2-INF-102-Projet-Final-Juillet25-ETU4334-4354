@@ -60,7 +60,7 @@ echo '<img src="' . $imagePath . '" alt="Photo de profil" class="rounded-circle 
 
         <?php
         if (count($objets) > 0) {
-            echo '<table class="table table-bordered">';
+            echo '<table class="table table-bordered styled-table">';
             echo '<thead><tr><th>Image</th><th>Nom de l\'objet</th><th>Date de retour</th><th>Emprunt en cours</th></tr></thead><tbody>';
             foreach ($objets as $row) {
                 echo '<tr>';
