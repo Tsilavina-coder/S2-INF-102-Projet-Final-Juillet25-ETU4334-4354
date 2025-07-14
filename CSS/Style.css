@@ -126,3 +126,37 @@ p {
         padding: 1rem;
     }
 }
+
+/* New styled table for listeobj.php */
+
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    background-color: #fff;
+    color: #000;
+    border: 2px solid #e50914;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.styled-table th,
+.styled-table td {
+    border: 1px solid #e50914;
+    padding: 0.75rem;
+    text-align: left;
+}
+
+.styled-table th {
+    background-color: #e50914;
+    color: #fff;
+    font-weight: 700;
+}
+
+.styled-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.styled-table tr:hover {
+    background-color: #ffe6e6;
+}
