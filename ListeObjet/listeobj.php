@@ -12,8 +12,26 @@
         <?php
         require_once __DIR__ . '/../inc/fonctions/fonctions.php';
 
-        $objets = getListeObjets();
+        $categories = getCategories();
 
+        $selected_categorie = $_GET['categorie'] ?? '';
+
+        $objets = getListeObjets($selected_categorie);
+        ?>
+
+        <form method="GET" class="mb-3">
+            <label for="categorie" class="form-label">Catégorie :</label>
+            <select name="categorie" id="categorie" class="form-select" onchange="this.form.submit()">
+                <option value="">Toutes les catégories</option>
+                <?php foreach ($categories as $categorie): ?>
+                    <option value="<?= htmlspecialchars($categorie['id_categorie']) ?>" <?= ($selected_categorie == $categorie['id_categorie']) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($categorie['nom_categorie']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </form>
+
+        <?php
         if (count($objets) > 0) {
             echo '<table class="table table-bordered">';
             echo '<thead><tr><th>Nom de l\'objet</th><th>Date de retour</th><th>Emprunt en cours</th></tr></thead><tbody>';
