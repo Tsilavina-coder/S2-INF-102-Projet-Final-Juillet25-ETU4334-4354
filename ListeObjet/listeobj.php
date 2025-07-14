@@ -59,20 +59,27 @@ echo '<img src="' . $imagePath . '" alt="Photo de profil" class="rounded-circle 
         </form>
 
         <?php
-            if (count($objets) > 0) {
-                echo '<table class="styled-table">';
-                echo '<thead><tr><th>Nom de l\'objet</th><th>Date de retour</th><th>Emprunt en cours</th></tr></thead><tbody>';
-                foreach ($objets as $row) {
-                    echo '<tr>';
-                    echo '<td>' . htmlspecialchars($row["nom_objet"]) . '</td>';
-                    echo '<td>' . ($row["date_retour"] ? htmlspecialchars($row["date_retour"]) : 'N/A') . '</td>';
-                    echo '<td>' . $row["emprunt_en_cours"] . '</td>';
-                    echo '</tr>';
+        if (count($objets) > 0) {
+            echo '<table class="table table-bordered">';
+            echo '<thead><tr><th>Image</th><th>Nom de l\'objet</th><th>Date de retour</th><th>Emprunt en cours</th></tr></thead><tbody>';
+            foreach ($objets as $row) {
+                echo '<tr>';
+                echo '<td>';
+                if (!empty($row["image_objet"]) && file_exists(__DIR__ . '/../assets/' . $row["image_objet"])) {
+                    echo '<img src="../assets/' . htmlspecialchars($row["image_objet"]) . '" alt="Image objet" style="width: 80px; height: 80px; object-fit: cover;">';
+                } else {
+                    echo 'Pas d\'image';
                 }
-                echo '</tbody></table>';
-            } else {
-                echo "<p>Aucun objet trouvé.</p>";
+                echo '</td>';
+                echo '<td>' . htmlspecialchars($row["nom_objet"]) . '</td>';
+                echo '<td>' . ($row["date_retour"] ? htmlspecialchars($row["date_retour"]) : 'N/A') . '</td>';
+                echo '<td>' . $row["emprunt_en_cours"] . '</td>';
+                echo '</tr>';
             }
+            echo '</tbody></table>';
+        } else {
+            echo "<p>Aucun objet trouvé.</p>";
+        }
         ?>
     </div>
 </body>
