@@ -30,11 +30,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['nom'] = $user['nom'];
         header("Location: ../ListeObjet/listeobj.php");
         exit();
-    } else {
-        // Identifiants invalides
-        $_SESSION['error'] = "Email ou mot de passe incorrect.";
-        header("Location: Login/Index.php");
-        exit();
     }
 
     $stmt->close();

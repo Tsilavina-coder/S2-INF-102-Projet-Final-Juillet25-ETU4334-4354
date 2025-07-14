@@ -1,16 +1,43 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Liste des objets</title>
-    <link rel="stylesheet" href="../Login/bootstrap-5.3.5-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../CSS/Style.css" />
+    <!-- <link rel="stylesheet" href="../Login/bootstrap-5.3.5-dist/css/bootstrap.min.css"> -->
 </head>
 <body>
+    <?php
+    session_start();
+    require_once __DIR__ . '/../inc/fonctions/fonctions.php';
+
+    $id_membre = $_SESSION['id_membre'] ?? null;
+    $profile = null;
+    if ($id_membre !== null) {
+        $profile = getUserProfile($id_membre);
+    }
+    ?>
     <div class="container mt-5">
+        <?php if ($profile): ?>
+            <div class="user-profile mb-4 d-flex align-items-center">
+                <?php
+                $imagePath = "../assets/" . htmlspecialchars($profile['nom']) . ".jpg";
+                if (file_exists($imagePath)) {
+echo '<img src="' . $imagePath . '" alt="Photo de profil" class="rounded-circle me-3" style="width: 100px; height: 100px; object-fit: cover;">';
+                } else {
+                    echo '<div class="rounded-circle bg-secondary me-3" style="width: 80px; height: 80px;"></div>';
+                }
+                ?>
+                <div>
+                    <h4><?= htmlspecialchars($profile['nom']) ?></h4>
+                    <p><?= htmlspecialchars($profile['email']) ?></p>
+                </div>
+            </div>
+        <?php endif; ?>
+
         <h2>Liste des objets</h2>
         <?php
-        require_once __DIR__ . '/../inc/fonctions/fonctions.php';
 
         $categories = getCategories();
 
@@ -20,7 +47,7 @@
         ?>
 
         <form method="GET" class="mb-3">
-            <label for="categorie" class="form-label">Catégorie :</label>
+            <label for="categorie" class="form-label">Filtrer par catégorie :</label>
             <select name="categorie" id="categorie" class="form-select" onchange="this.form.submit()">
                 <option value="">Toutes les catégories</option>
                 <?php foreach ($categories as $categorie): ?>
