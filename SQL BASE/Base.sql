@@ -115,3 +115,22 @@ INSERT INTO emprunt (id_objet, id_membre, date_emprunt, date_retour) VALUES
 (35, 4, '2023-06-20', '2023-07-05'),
 (40, 1, '2023-06-22', '2023-07-01'),
 (3, 2, '2023-06-25', '2023-07-10');
+
+
+UPDATE membre
+SET email = REPLACE(email, '@example.com', '@gmail.com')
+WHERE email LIKE '%@example.com';
+
+
+ALTER TABLE objet ADD COLUMN image_objet VARCHAR(255) DEFAULT NULL;
+
+CREATE TABLE etat_objet_retour (
+    id_retour INT AUTO_INCREMENT PRIMARY KEY,
+    id_objet INT NOT NULL,
+    id_membre INT NOT NULL,
+    etat VARCHAR(20) NOT NULL,
+    date_retour DATE NOT NULL,
+    FOREIGN KEY (id_objet) REFERENCES objet(id_objet),
+    FOREIGN KEY (id_membre) REFERENCES membre(id_membre)
+);
+

@@ -2,10 +2,125 @@
 
 body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    background-color: #f5f5f5;
+    background-color: #d0e1f9; /* fond gris bleu clair */
     color: #333;
     margin: 0;
     padding: 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 2rem 2rem 3rem 2rem;
+    background-color: #f9fbfd; /* fond blanc légèrement bleuté */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 8px;
+}
+
+h2 {
+    color: #1a3e72;
+    margin-bottom: 1.5rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+table th,
+table td {
+    border: none;
+    padding: 1rem 1.5rem;
+    background-color: #ffffff;
+    vertical-align: middle;
+}
+
+table th {
+    background-color: #c5d9f1;
+    color: #1a3e72;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+table tr:hover td {
+    background-color: #e6f0fa;
+}
+
+button, .btn {
+    background-color: #1a3e72;
+    border: none;
+    color: white;
+    padding: 0.7rem 1.4rem;
+    font-size: 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 2px 6px rgba(26, 62, 114, 0.4);
+}
+
+button:hover, .btn:hover {
+    background-color: #145293;
+}
+
+form label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+    color: #1a3e72;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+select,
+textarea {
+    width: 100%;
+    padding: 0.6rem;
+    margin-bottom: 1.2rem;
+    border: 1px solid #a9c0e8;
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+    border-color: #145293;
+    outline: none;
+}
+
+p {
+    line-height: 1.6;
+    color: #1a3e72;
+}
+
+.mt-3 {
+    margin-top: 1rem !important;
+}
+
+.mb-3 {
+    margin-bottom: 1rem !important;
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+    .container {
+        margin: 1rem;
+        padding: 1rem;
+    }
 }
 
 a {
@@ -125,38 +240,4 @@ p {
         margin: 1rem;
         padding: 1rem;
     }
-}
-
-/* New styled table for listeobj.php */
-
-.styled-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 1rem;
-    background-color: #fff;
-    color: #000;
-    border: 2px solid #e50914;
-    border-radius: 5px;
-    overflow: hidden;
-}
-
-.styled-table th,
-.styled-table td {
-    border: 1px solid #e50914;
-    padding: 0.75rem;
-    text-align: left;
-}
-
-.styled-table th {
-    background-color: #e50914;
-    color: #fff;
-    font-weight: 700;
-}
-
-.styled-table tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-.styled-table tr:hover {
-    background-color: #ffe6e6;
 }

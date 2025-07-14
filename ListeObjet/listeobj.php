@@ -31,49 +31,91 @@ echo '<img src="' . $imagePath . '" alt="Photo de profil" class="rounded-circle 
                 ?>
                 <div>
                     <h4><?= htmlspecialchars($profile['nom']) ?></h4>
-                    <p><?= htmlspecialchars($profile['email']) ?></p>
+                    <p>Email : <?= htmlspecialchars($profile['email']) ?></p>
+                    <p>Genre : <?php
+                        if (isset($profile['genre'])) {
+                            echo $profile['genre'] === 'F' ? 'Féminin' : ($profile['genre'] === 'M' ? 'Masculin' : htmlspecialchars($profile['genre']));
+                        } else {
+                            echo 'Non renseigné';
+                        }
+                    ?></p>
+                    <p>Date de naissance : <?= !empty($profile['date_naissance']) ? date('d/m/Y', strtotime($profile['date_naissance'])) : 'Non renseignée' ?></p>
                 </div>
             </div>
         <?php endif; ?>
 
         <h2>Liste des objets</h2>
+        <div class="d-flex justify-content-end mb-2">
+            <a href="fiche_utilisateur.php?id_membre=<?= htmlspecialchars($id_membre) ?>" class="btn btn-primary">Voir la fiche utilisateur</a>
+        </div>
         <?php
 
         $categories = getCategories();
 
         $selected_categorie = $_GET['categorie'] ?? '';
+        $search_nom = $_GET['nom_objet'] ?? '';
+        $search_disponible = isset($_GET['disponible']) ? ($_GET['disponible'] === 'on') : null;
 
-        $objets = getListeObjets($selected_categorie);
+        $objets = getListeObjets($selected_categorie, $search_nom, $search_disponible);
+
+        // Mapping category names to image filenames
+        $categoryImages = [
+            'Bricolage' => 'bricolage.jpg',
+            'Cuisine' => 'cuisine.jpg',
+            'Esthetic' => 'esthetic.jpeg',
+            'Mecanique' => 'mecanique.jpg'
+        ];
         ?>
 
+        <div class="category-images mb-4 d-flex flex-wrap gap-3">
+            <?php foreach ($categories as $categorie): 
+                $catName = $categorie['nom_categorie'];
+                $imageFile = $categoryImages[$catName] ?? null;
+                if ($imageFile && file_exists(__DIR__ . '/../assets/categorie/' . $imageFile)):
+            ?>
+                <div class="category-item text-center" style="width: 150px;">
+                    <img src="../assets/categorie/<?= htmlspecialchars($imageFile) ?>" alt="<?= htmlspecialchars($catName) ?>" style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px;">
+                    <div class="category-attribution mt-2" style="font-size: 0.9em; color: #555;">
+                        <?= htmlspecialchars($catName) ?>
+                    </div>
+                </div>
+            <?php endif; endforeach; ?>
+        </div>
+
         <form method="GET" class="mb-3">
-            <label for="categorie" class="form-label">Filtrer par catégorie :</label>
-            <select name="categorie" id="categorie" class="form-select" onchange="this.form.submit()">
-                <option value="">Toutes les catégories</option>
-                <?php foreach ($categories as $categorie): ?>
-                    <option value="<?= htmlspecialchars($categorie['id_categorie']) ?>" <?= ($selected_categorie == $categorie['id_categorie']) ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($categorie['nom_categorie']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
+            <div class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <label for="categorie" class="form-label">Catégorie :</label>
+                    <select name="categorie" id="categorie" class="form-select" onchange="this.form.submit()">
+                        <option value="">Toutes les catégories</option>
+                        <?php foreach ($categories as $categorie): ?>
+                            <option value="<?= htmlspecialchars($categorie['id_categorie']) ?>" <?= ($selected_categorie == $categorie['id_categorie']) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($categorie['nom_categorie']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <label for="nom_objet" class="form-label">Nom de l'objet :</label>
+                    <input type="text" id="nom_objet" name="nom_objet" class="form-control" value="<?= htmlspecialchars($search_nom) ?>" placeholder="Recherche par nom" />
+                </div>
+                <div class="col-auto form-check mt-4">
+                    <input type="checkbox" id="disponible" name="disponible" class="form-check-input" <?= $search_disponible ? 'checked' : '' ?> onchange="this.form.submit()" />
+                    <label for="disponible" class="form-check-label">Disponible</label>
+                </div>
+            </div>
         </form>
 
         <?php
         if (count($objets) > 0) {
-            echo '<table class="table table-bordered styled-table">';
-            echo '<thead><tr><th>Image</th><th>Nom de l\'objet</th><th>Date de retour</th><th>Emprunt en cours</th></tr></thead><tbody>';
+            echo '<table class="table table-bordered">';
+            echo '<thead><tr><th>Nom de l\'objet</th><th>Date de retour</th><th>Emprunt en cours</th><th>Action</th></tr></thead><tbody>';
             foreach ($objets as $row) {
                 echo '<tr>';
-                echo '<td>';
-                if (!empty($row["image_objet"]) && file_exists(__DIR__ . '/../assets/' . $row["image_objet"])) {
-                    echo '<img src="../assets/' . htmlspecialchars($row["image_objet"]) . '" alt="Image objet" style="width: 80px; height: 80px; object-fit: cover;">';
-                } else {
-                    echo 'Pas d\'image';
-                }
-                echo '</td>';
-                echo '<td>' . htmlspecialchars($row["nom_objet"]) . '</td>';
+                echo '<td><a href="fiche_objet.php?id_objet=' . htmlspecialchars($row["id_objet"]) . '">' . htmlspecialchars($row["nom_objet"]) . '</a></td>';
                 echo '<td>' . ($row["date_retour"] ? htmlspecialchars($row["date_retour"]) : 'N/A') . '</td>';
                 echo '<td>' . $row["emprunt_en_cours"] . '</td>';
+                echo '<td><a href="emprunt_objet.php?id_objet=' . htmlspecialchars($row["id_objet"]) . '" class="btn btn-success btn-sm">Emprunter</a></td>';
                 echo '</tr>';
             }
             echo '</tbody></table>';
@@ -81,6 +123,9 @@ echo '<img src="' . $imagePath . '" alt="Photo de profil" class="rounded-circle 
             echo "<p>Aucun objet trouvé.</p>";
         }
         ?>
+            <div class="mt-4">
+                <a href="ajout_objet.php" class="btn btn-primary">Ajouter objet</a>
+            </div>
     </div>
 </body>
 </html>

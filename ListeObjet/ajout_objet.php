@@ -4,6 +4,9 @@ if (!isset($_SESSION['id_membre'])) {
     header('Location: ../Login/Index.php');
     exit();
 }
+
+require_once __DIR__ . '/../inc/fonctions/fonctions.php';
+$categories = getCategories();
 ?>
 
 <!DOCTYPE html>
@@ -20,6 +23,15 @@ if (!isset($_SESSION['id_membre'])) {
             <div class="mb-3">
                 <label for="nom_objet" class="form-label">Nom de l'objet :</label>
                 <input type="text" id="nom_objet" name="nom_objet" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label for="id_categorie" class="form-label">Catégorie :</label>
+                <select id="id_categorie" name="id_categorie" class="form-select" required>
+                    <option value="">Sélectionnez une catégorie</option>
+                    <?php foreach ($categories as $categorie): ?>
+                        <option value="<?= htmlspecialchars($categorie['id_categorie']) ?>"><?= htmlspecialchars($categorie['nom_categorie']) ?></option>
+                    <?php endforeach; ?>
+                </select>
             </div>
             <div class="mb-3">
                 <label for="image_objet" class="form-label">Image de l'objet :</label>

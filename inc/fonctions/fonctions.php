@@ -13,20 +13,53 @@ function getDbConnection() {
     return $conn;
 }
 
-function getListeObjets($id_categorie = null) {
+function getListeObjets($id_categorie = null, $nom_objet = null, $disponible = null) {
     $conn = getDbConnection();
 
-    $sql = "SELECT o.id_objet, o.nom_objet, e.date_retour, 
+    $sql = "SELECT o.id_objet, o.nom_objet, o.image_objet, c.nom_categorie,
             CASE 
-                WHEN e.date_retour IS NULL OR e.date_retour >= CURDATE() THEN 'Oui' 
-                ELSE 'Non' 
-            END AS emprunt_en_cours
+                WHEN EXISTS (
+                    SELECT 1 FROM emprunt e2 
+                    WHERE e2.id_objet = o.id_objet 
+                    AND e2.date_retour >= CURDATE()
+                ) THEN 'Non'
+                ELSE 'Oui'
+            END AS emprunt_en_cours,
+            (SELECT MIN(e3.date_retour) FROM emprunt e3 WHERE e3.id_objet = o.id_objet AND e3.date_retour >= CURDATE()) AS date_retour
             FROM objet o
-            LEFT JOIN emprunt e ON o.id_objet = e.id_objet";
+            LEFT JOIN categorie_objet c ON o.id_categorie = c.id_categorie";
+
+    $conditions = [];
 
     if ($id_categorie !== null && $id_categorie !== '') {
         $id_categorie = (int)$id_categorie;
-        $sql .= " WHERE o.id_categorie = $id_categorie";
+        $conditions[] = "o.id_categorie = $id_categorie";
+    }
+
+    if ($nom_objet !== null && $nom_objet !== '') {
+        $nom_objet_escaped = $conn->real_escape_string($nom_objet);
+        $conditions[] = "o.nom_objet LIKE '%$nom_objet_escaped%'";
+    }
+
+    if ($disponible !== null) {
+        if ($disponible) {
+            // Exclude objects currently borrowed
+            $conditions[] = "NOT EXISTS (
+                SELECT 1 FROM emprunt e 
+                WHERE e.id_objet = o.id_objet 
+                AND e.date_retour >= CURDATE()
+            )";
+        } else {
+            $conditions[] = "EXISTS (
+                SELECT 1 FROM emprunt e 
+                WHERE e.id_objet = o.id_objet 
+                AND e.date_retour >= CURDATE()
+            )";
+        }
+    }
+
+    if (count($conditions) > 0) {
+        $sql .= " WHERE " . implode(" AND ", $conditions);
     }
 
     $sql .= " ORDER BY o.nom_objet";
@@ -95,4 +128,114 @@ function getUserProfile($id_membre) {
     $conn->close();
     return $profile;
 }
+function getObjetDetails($id_objet) {
+    $conn = getDbConnection();
+    $id_objet = (int)$id_objet;
+
+    $sql = "SELECT o.id_objet, o.nom_objet, o.image_objet, o.id_categorie, c.nom_categorie
+            FROM objet o
+            LEFT JOIN categorie_objet c ON o.id_categorie = c.id_categorie
+            WHERE o.id_objet = $id_objet";
+
+    $result = $conn->query($sql);
+    $objet = null;
+    if ($result) {
+        $objet = $result->fetch_assoc();
+    }
+    $conn->close();
+    return $objet;
+}
+
+function getHistoriqueEmprunts($id_objet) {
+    $conn = getDbConnection();
+    $id_objet = (int)$id_objet;
+
+    $sql = "SELECT e.id_emprunt, e.date_emprunt, e.date_retour, m.nom AS nom_membre
+            FROM emprunt e
+            LEFT JOIN membre m ON e.id_membre = m.id_membre
+            WHERE e.id_objet = $id_objet
+            ORDER BY e.date_emprunt DESC";
+
+    $result = $conn->query($sql);
+    $historique = [];
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $historique[] = $row;
+        }
+    }
+    $conn->close();
+    return $historique;
+}
+function getDateDisponibiliteProche($id_objet) {
+    $conn = getDbConnection();
+    $id_objet = (int)$id_objet;
+
+    $sql = "SELECT MIN(date_retour) AS date_disponible
+            FROM emprunt
+            WHERE id_objet = $id_objet
+            AND date_retour >= CURDATE()";
+
+    $result = $conn->query($sql);
+    $date_disponible = null;
+    if ($result) {
+        $row = $result->fetch_assoc();
+        $date_disponible = $row['date_disponible'];
+    }
+    $conn->close();
+    return $date_disponible;
+}
+function getUserEmprunts($id_membre) {
+    $conn = getDbConnection();
+    $id_membre = (int)$id_membre;
+
+    $sql = "SELECT o.id_objet, o.nom_objet, o.image_objet, e.date_emprunt, e.date_retour
+            FROM emprunt e
+            JOIN objet o ON e.id_objet = o.id_objet
+            WHERE e.id_membre = $id_membre
+            ORDER BY e.date_emprunt DESC";
+
+    $result = $conn->query($sql);
+    $emprunts = [];
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            // Format dates
+            if (!empty($row['date_emprunt'])) {
+                $dateEmprunt = DateTime::createFromFormat('Y-m-d', $row['date_emprunt']);
+                if ($dateEmprunt !== false) {
+                    $row['date_emprunt'] = $dateEmprunt->format('d/m/Y');
+                }
+            }
+            if (!empty($row['date_retour'])) {
+                $dateRetour = DateTime::createFromFormat('Y-m-d', $row['date_retour']);
+                if ($dateRetour !== false) {
+                    $row['date_retour'] = $dateRetour->format('d/m/Y');
+                }
+            }
+            $emprunts[] = $row;
+        }
+    }
+    $conn->close();
+    return $emprunts;
+}
+function getObjetsRetournes() {
+    $conn = getDbConnection();
+
+    $sql = "SELECT o.id_objet, o.nom_objet, e.etat, COUNT(*) as count_etat
+            FROM etat_objet_retour e
+            INNER JOIN objet o ON e.id_objet = o.id_objet
+            GROUP BY o.id_objet, o.nom_objet, e.etat
+            ORDER BY o.nom_objet, e.etat";
+
+    $result = $conn->query($sql);
+    $objetsRetournes = [];
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $objetsRetournes[] = $row;
+        }
+    }
+    $conn->close();
+    return $objetsRetournes;
+}
 ?>
+
+

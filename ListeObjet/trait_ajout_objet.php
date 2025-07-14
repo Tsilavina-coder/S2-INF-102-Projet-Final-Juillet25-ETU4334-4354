@@ -13,11 +13,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($_POST['nom_objet']) || empty(trim($_POST['nom_objet']))) {
         die('Le nom de l\'objet est requis.');
     }
+    if (!isset($_POST['id_categorie']) || empty($_POST['id_categorie'])) {
+        die('La catégorie est requise.');
+    }
     if (!isset($_FILES['image_objet'])) {
         die('Aucune image reçue.');
     }
 
     $nomObjet = trim($_POST['nom_objet']);
+    $idCategorie = intval($_POST['id_categorie']);
+    session_start();
+    $idMembre = $_SESSION['id_membre'] ?? null;
+    if ($idMembre === null) {
+        die('Utilisateur non authentifié.');
+    }
     $file = $_FILES['image_objet'];
 
     if ($file['error'] !== UPLOAD_ERR_OK) {
@@ -56,8 +65,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Insertion dans la table objet
-    $stmt = $conn->prepare("INSERT INTO objet (nom_objet, image_objet) VALUES (?, ?)");
-    $stmt->bind_param("ss", $nomObjet, $newName);
+    $stmt = $conn->prepare("INSERT INTO objet (nom_objet, image_objet, id_categorie, id_membre) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("ssii", $nomObjet, $newName, $idCategorie, $idMembre);
 
     if ($stmt->execute()) {
         $stmt->close();
